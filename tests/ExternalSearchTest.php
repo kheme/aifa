@@ -6,16 +6,16 @@ use Laravel\Lumen\Testing\DatabaseTransactions;
 class ExternalSearchTest extends TestCase
 {
     /**
-     * A basic test example.
+     * Can we successfully search for books?
      *
      * @return void
      */
     public function testCanPerformExternalBookSearch()
     {
-        $response = $this->get('external-books');
+        $response = $this->json('GET', 'external-books?name=the hedge knight');
         $response->assertResponseStatus(200);
         $response->seeJson([
-            'name' => 'A Game of Thrones',
+            'name' => 'The Hedge Knight',
             'status' => 'success'
         ]);
     }
