@@ -1,5 +1,3 @@
 <?php
 
-$router->get('/', function () use ($router) {
-    return $router->app->version();
-});
+$router->get('external-books',       'ExternalBookController@index');
