@@ -1,4 +1,13 @@
 <?php
+$router->get('/', function () {
+    return response()->json(
+        [
+            'status_code' => 200,
+            'status'      => 'success',
+            'message'     => 'Visit https://github.com/kheme/aifa for more',
+        ]
+    );
+});
 
 $router->get('external-books',       'ExternalBookController@index');
 
