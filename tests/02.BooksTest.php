@@ -6,8 +6,7 @@ use Laravel\Lumen\Testing\DatabaseTransactions;
 class BooksTest extends TestCase
 {
     protected $fake_books;
-
-
+    
     /**
      * Test setup
      * 
@@ -22,6 +21,7 @@ class BooksTest extends TestCase
 
         $this->fake_books = factory(App\Models\Book::class, 5)->make();
     }
+
     /**
      * Can we books successfully?
      *
@@ -31,11 +31,16 @@ class BooksTest extends TestCase
      */
     public function testCanCreateBook()
     {
-        $response = $this->json('POST', 'api/v1/books', $this->fake_books[0]->toArray());
+        $fake_book = array_merge(
+            $this->fake_books[0]->toArray(),
+            [ 'authors' => [factory(App\Models\Author::class)->make()->name]]
+        );
+
+        $response = $this->json('POST', 'api/v1/books', $fake_book);
         $response->assertResponseStatus(201);
         $response->seeJson([ 'status' => 'success' ]);
-        $response->seeJson($this->fake_books[0]->toArray());
-        $this->seeInDatabase('books', collect($this->fake_books[0]->toArray())->except('authors')->toArray());
+        $response->seeJson($fake_book);
+        $this->seeInDatabase('books', collect($fake_book)->except('authors')->toArray());
     }
 
     /**
@@ -66,17 +71,60 @@ class BooksTest extends TestCase
      */
     public function testCanUpdateBook()
     {
-        $post_response = $this->json('POST', 'api/v1/books', $this->fake_books[3]->toArray());
-        $post_response->seeJson([ 'status' => 'success' ]);
+        $book_and_author = factory(App\Models\BookAuthor::class)->create();
 
-        $get_response = $this->json('GET', 'api/v1/books');
-        $get_response->assertResponseStatus(200);
-        $get_response->seeJson($this->fake_books[3]->toArray());
-        
-        $new_book_id = json_decode($get_response->response->getContent())->data[0]->id;
-
-        $patch_response = $this->json('PATCH', 'api/v1/books/' . $new_book_id, $this->fake_books[4]->toArray());
+        $patch_response = $this->json('PATCH', 'api/v1/books/' . $book_and_author->book_id, $this->fake_books[4]->toArray());
         $patch_response->assertResponseStatus(200);
         $this->seeInDatabase('books', collect($this->fake_books[4]->toArray())->except('authors')->toArray());
+    }
+
+    /**
+     * Can we fetch a book successfully?
+     *
+     * @author Okiemute Omuta <iamkheme@gmail.com>
+     * 
+     * @return void
+     */
+    public function testCanFetchBook()
+    {
+        $new_book   = factory(App\Models\Book::class)->create();
+        $new_author = factory(App\Models\Author::class)->create();
+        
+        factory(App\Models\BookAuthor::class)->create(
+            [
+                'book_id'   => $new_book->id,
+                'author_id' => $new_author->id
+            ]
+        );
+
+        $response = $this->json('GET', 'api/v1/books/' . $new_book->id);
+        $response->assertResponseStatus(200);
+        $response->seeJson($new_book->toArray());
+        $response->seeJson([ 'authors' => [ $new_author->name ] ]);
+    }
+
+    /**
+     * Can we delete books successfully?
+     *
+     * @author Okiemute Omuta <iamkheme@gmail.com>
+     * 
+     * @return void
+     */
+    public function testCanDeleteBook()
+    {
+        $new_book   = factory(App\Models\Book::class)->create();
+        $new_author = factory(App\Models\Author::class)->create();
+        
+        factory(App\Models\BookAuthor::class)->create(
+            [
+                'book_id'   => $new_book->id,
+                'author_id' => $new_author->id
+            ]
+        );
+
+        $this->seeInDatabase('books', $new_book->toArray());
+        $patch_response = $this->json('DELETE', 'api/v1/books/' . $new_book->id);
+        $patch_response->assertResponseStatus(200);
+        $this->missingFromDatabase('books', $new_book->toArray());
     }
 }
