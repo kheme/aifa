@@ -1,5 +1,5 @@
 # aifa
-A simple RESTful API service inspired by the [https://anapioficeandfire.com/Documentation#books](Ice &amp; Fire API), written by [https://github.com/kheme](Okiemute Omuta)
+A simple RESTful API service inspired by the (https://anapioficeandfire.com/Documentation#books)[Ice &amp; Fire API], written by (https://github.com/kheme)[Okiemute Omuta]
 
 ## Project Requirements
 * MySQL database
