@@ -18,9 +18,9 @@ A simple RESTful API service inspired by the [Ice &amp; Fire API](https://anapio
 * From the terminal, run the command `git clone https://github.com/kheme/aifa.git`
 * Enter the the "aifa" folder and make a copy of the `.env.example` with the command `cp .env.example .env`
 * Open the `.env` file in an editor of your choice, and set your `REDIS_PASSWORD`
-
-#### Migration
-Return to the terminal window and run the command `php artisan migrate`
+* From the terminal window, run `composer update`
+* Return to the terminal window and run the command `php artisan migrate`
+* Finally, from the terminal window start the development server with the command `php -S localhost:8000 -t ./public`
 
 ## Testing
 To test, open a new terminal window from within the aifa folder and run `./vendor/bin/pupunit --testdox`
