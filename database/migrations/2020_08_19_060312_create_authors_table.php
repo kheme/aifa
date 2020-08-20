@@ -18,7 +18,7 @@ class CreateAuthorsTable extends Migration
             $table->collation = 'utf8mb4_unicode_ci';
 
             $table->unsignedBigInteger('id', true);
-            $table->string('name');
+            $table->string('name')->unique();
             $table->timestamps();
         });
     }

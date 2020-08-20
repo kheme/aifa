@@ -18,8 +18,8 @@ class CreateBooksTable extends Migration
             $table->collation = 'utf8mb4_unicode_ci';
 
             $table->unsignedBigInteger('id', true);
-            $table->string('name');
-            $table->string('isbn');
+            $table->string('name')->unique();
+            $table->string('isbn')->unique();
             $table->string('country');
             $table->integer('number_of_pages');
             $table->string('publisher');
