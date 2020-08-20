@@ -9,7 +9,7 @@
  * @author    Okiemute Omuta <omuta.okiemute@gmail.com>
  * @copyright 2020 Okiemute Omuta. All rights reserved.
  * @license   All rights reserved.
- * @link      https://twitter.com/kheme
+ * @link      https://github.com/kheme
  */
 
 use App\Models\Book;

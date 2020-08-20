@@ -9,7 +9,7 @@
  * @author    Okiemute Omuta <omuta.okiemute@gmail.com>
  * @copyright 2020 Okiemute Omuta. All rights reserved.
  * @license   All rights reserved.
- * @link      https://twitter.com/kheme
+ * @link      https://github.com/kheme
  */
 namespace App\Http\Controllers;
 
@@ -31,7 +31,7 @@ use Carbon\Carbon;
  * @author    Okiemute Omuta <omuta.okiemute@gmail.com>
  * @copyright 2020 Okiemute Omuta. All rights reserved.
  * @license   All rights reserved.
- * @link      https://twitter.com/kheme
+ * @link      https://github.com/kheme
  */
 class BookController extends Controller
 {

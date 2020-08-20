@@ -9,7 +9,7 @@
  * @author    Okiemute Omuta <iamkheme@gmail.com>
  * @copyright 2019 Datespace. All rights reserved.
  * @license   All rights reserved.
- * @link      https://twitter.com/kheme
+ * @link      https://github.com/kheme
  */
 namespace App\Http\Requests;
 
@@ -25,7 +25,7 @@ use Illuminate\Validation\Validator as ValidationValidator;
  * @author    Okiemute Omuta <iamkheme@gmail.com>
  * @copyright 2019 Datespace. All rights reserved.
  * @license   All rights reserved.
- * @link      https://twitter.com/kheme
+ * @link      https://github.com/kheme
  */
 class CreateBookRequest
 {
