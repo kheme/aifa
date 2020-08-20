@@ -70,6 +70,35 @@ class BookController extends Controller
         return $this->successRespons($books->makeHidden('getAuthors')->toArray());
     }
 
+    
+    /**
+     * Fetch a book from the local database
+     * 
+     * @param int $id Primary key of book of interest
+     *
+     * @author Okiemute Omuta <iamkheme@gmail.com>
+     *
+     * @return \Illuminate\Http\JsonResponse
+     */
+    public function show(int $id) : JsonResponse
+    {
+        $book_info = Book::findOrFail($id)->with('getAuthors:name')->first();
+
+        return $this->successRespons(
+            array_merge(
+                [ 'id' => $id ], 
+                $this->formatBookResponse(
+                    $book_info->toArray(),
+                    collect($book_info->getAuthors)->map(function ($item, $key) {
+                        return collect($item)->only('name');
+                    })->flatten()
+                    ->toArray()
+                )
+            )
+        );
+    }
+
+
     /**
      * Create book in the local database
      *
@@ -130,6 +159,27 @@ class BookController extends Controller
                 $this->create_book_request->getAuthors()
             ),
             'The book ' . $request->name . ' was updated successfully'
+        );
+    }
+
+    /**
+     * Delete a book from the local database
+     *
+     * @param int $id Primary key of book of interest
+     *
+     * @author Okiemute Omuta <iamkheme@gmail.com>
+     *
+     * @return \Illuminate\Http\JsonResponse
+     */
+    public function destroy(int $id) : JsonResponse
+    {
+        $book = Book:: findOrFail($id)->first();
+        $book->delete();
+
+        return $this->successRespons(
+            [],
+            'The book ' . $book->name . ' was deleted successfully',
+            204
         );
     }
 
