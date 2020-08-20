@@ -1,27 +1,26 @@
 # aifa
-A simple RESTful API service powered by the [https://anapioficeandfire.com/Documentation#books](Ice &amp; Fire API)
+A simple RESTful API service inspired by the [https://anapioficeandfire.com/Documentation#books](Ice &amp; Fire API), written by [https://github.com/kheme](Okiemute Omuta)
 
 ## Project Requirements
-* MySQL for database
-* Redis for cache
+* MySQL database
+* Redis server
 * Apache web server
 * PHP 7.2.5 or higher
 
 ## Project Setup
 #### Database Setup
-* Create a new MySQL database called `aifa`
-* Create a new user MySQL user with username and password set as `aifa`
-* Grant the new MySQL user full privileges to the aifa database
+* Create a new MySQL database called "aifa"
+* Create a new user MySQL user with username = "aifa" and password = "aifa"
+* Grant the new MySQL user ("aifa") full privileges to the "aifa" database
 
 #### Project Initialization &amp; Configuration
-* Create a new folder called "aifa"
-* Enter the new folder and launch a new terminla window
+* Open a new terminal window in a folder of your choice
 * From the terminal, run the command `git clone https://github.com/kheme/aifa.git`
-* Make a copy of the `.env.example` with the command `cp .env.example .env`
-* Open the `.env` file in an editor of your choice, and set your redis password
+* Enter the the "aifa" folder and make a copy of the `.env.example` with the command `cp .env.example .env`
+* Open the `.env` file in an editor of your choice, and set your `REDIS_PASSWORD`
 
 #### Migration
-Open a new terminal window from within the aifa folder and run `php artisan migrate`
+Return to the terminal window and run the command `php artisan migrate`
 
 ## Testing
 To test, open a new terminal window from within the aifa folder and run `./vendor/bin/pupunit --testdox`
