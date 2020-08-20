@@ -21,6 +21,7 @@ use App\Models\Author;
 use App\Models\Book;
 use App\Models\BookAuthor;
 use Carbon\Carbon;
+use Illuminate\Http\JsonResponse;
 
 /**
  * Main BookController class
@@ -47,15 +48,38 @@ class BookController extends Controller
     }
 
     /**
-     * Create book
+     * List books from local database
+     *
+     * @author Okiemute Omuta <iamkheme@gmail.com>
+     *
+     * @return \Illuminate\Http\JsonResponse
+     */
+    public function index() : JsonResponse
+    {
+        $books = Book::selectRaw(
+            'id, name, isbn, null AS authors, number_of_pages,
+            publisher, country, release_date'
+        )
+        ->with('getAuthors:name')
+        ->get();
+
+        foreach ($books as $book) {
+            $book->authors = $book->getAuthors()->pluck('name')->toArray();
+        }
+        
+        return $this->successRespons($books->makeHidden('getAuthors')->toArray());
+    }
+
+    /**
+     * Create book in local database
      *
      * @param \Illuminate\Http\Request $request HTTP request
      * 
      * @author Okiemute Omuta <omuta.okiemute@gmail.com>
      * 
-     * @return json
+     * @return \Illuminate\Http\JsonResponse
      */
-    public function store(Request $request)
+    public function store(Request $request) : JsonResponse
     {
         $validator = $this->create_book_request->validate($request);
 
@@ -65,40 +89,41 @@ class BookController extends Controller
 
         $book_info = $this->create_book_request->getBookInfo();
 
-        try {
-            DB::beginTransaction();
+        DB::beginTransaction();
 
-            $book = Book::updateOrCreate(
-                [ 'name' => $book_info['name'] ],
-                $book_info
-            );
+        $book = Book::updateOrCreate(
+            [ 'name' => $book_info['name'] ],
+            $book_info
+        );
 
-            $updated_authors = $this->saveBookAuthors(
-                $book->id,
-                $this->create_book_request->getAuthors()
-            );
-            
-            if (! $updated_authors) {
-                throw new Exception('Could not create book');
-            }
-
-            DB::commit();
-
-            $book = Book::selectRaw(
-                'id, name, isbn, null AS authors, number_of_pages,
-                publisher, country, release_date'
-            )
-            ->with('getAuthors')
-            ->whereId($book->id)
-            ->first();
-            
-            $book->authors = $book->getAuthors->pluck('name');
-
-            return $this->successRespons($book->makeHidden([ 'id', 'getAuthors' ])->toArray());
-        } catch (\Exception $exception) {
+        if (! $book) {
             DB::rollBack();
-            return $this->errorRespons($exception->getMessage(), 500);
+            throw new Exception('Could not create book');
         }
+
+        $updated_authors = $this->saveBookAuthors(
+            $book->id,
+            $this->create_book_request->getAuthors()
+        );
+        
+        if (! $updated_authors) {
+            DB::rollBack();
+            throw new Exception('Could not create book authors');
+        }
+
+        DB::commit();
+
+        $book = Book::selectRaw(
+            'id, name, isbn, null AS authors, number_of_pages,
+            publisher, country, release_date'
+        )
+        ->with('getAuthors')
+        ->whereId($book->id)
+        ->first();
+        
+        $book->authors = $book->getAuthors->pluck('name');
+
+        return $this->successRespons($book->makeHidden([ 'id', 'getAuthors' ])->toArray());
     }
 
     /**
