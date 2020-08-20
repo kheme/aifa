@@ -15,13 +15,13 @@ namespace App\Http\Controllers;
 
 use Exception;
 use Illuminate\Http\Request;
+use Illuminate\Http\JsonResponse;
 use Illuminate\Support\Facades\DB;
 use App\Http\Requests\CreateBookRequest;
 use App\Models\Author;
 use App\Models\Book;
 use App\Models\BookAuthor;
 use Carbon\Carbon;
-use Illuminate\Http\JsonResponse;
 
 /**
  * Main BookController class
@@ -48,7 +48,7 @@ class BookController extends Controller
     }
 
     /**
-     * List books from local database
+     * List books from the local database
      *
      * @author Okiemute Omuta <iamkheme@gmail.com>
      *
@@ -66,12 +66,12 @@ class BookController extends Controller
         foreach ($books as $book) {
             $book->authors = $book->getAuthors()->pluck('name')->toArray();
         }
-        
+
         return $this->successRespons($books->makeHidden('getAuthors')->toArray());
     }
 
     /**
-     * Create book in local database
+     * Create book in the local database
      *
      * @param \Illuminate\Http\Request $request HTTP request
      * 
@@ -87,69 +87,98 @@ class BookController extends Controller
             return $this->errorRespons($validator->errors()->all()[0], 400);
         }
 
-        $book_info = $this->create_book_request->getBookInfo();
+        $book_info   = $this->create_book_request->getBookInfo();
+        $author_info = $this->create_book_request->getAuthors();
 
         DB::beginTransaction();
 
-        $book = Book::updateOrCreate(
-            [ 'name' => $book_info['name'] ],
-            $book_info
-        );
+        $book    = Book::firstOrCreate([ 'name' => $book_info['name']], $book_info);
+        $authors = $this->saveAuthors($author_info);
 
         if (! $book) {
             DB::rollBack();
             throw new Exception('Could not create book');
         }
 
-        $updated_authors = $this->saveBookAuthors(
-            $book->id,
-            $this->create_book_request->getAuthors()
-        );
-        
-        if (! $updated_authors) {
+        if (! $book->addAuthors($authors)) {
             DB::rollBack();
-            throw new Exception('Could not create book authors');
+            throw new Exception('Could not add author(s) to book');
         }
 
         DB::commit();
 
-        $book = Book::selectRaw(
-            'id, name, isbn, null AS authors, number_of_pages,
-            publisher, country, release_date'
-        )
-        ->with('getAuthors')
-        ->whereId($book->id)
-        ->first();
-        
-        $book->authors = $book->getAuthors->pluck('name');
+        return $this->successRespons([
+            'book' => $this->formatBookResponse($book_info, $author_info)
+        ], null, 201);
+    }
 
-        return $this->successRespons($book->makeHidden([ 'id', 'getAuthors' ])->toArray());
+    public function update(Request $request, int $id) : JsonResponse
+    {
+        $validator = $this->create_book_request->validate($request);
+
+        if ($validator->fails()) {
+            return $this->errorRespons($validator->errors()->all()[0], 400);
+        }
+
+        $book_info = $this->create_book_request->getBookInfo();
+
+        Book::findOrFail($id)->update($book_info);
+
+        return $this->successRespons(
+            $this->formatBookResponse(
+                $book_info,
+                $this->create_book_request->getAuthors()
+            ),
+            'The book ' . $request->name . ' was updated successfully'
+        );
     }
 
     /**
      * Save list of authors for a given book
      *
-     * @param int   $book_id Primary key of book of interest
-     * @param array $authors Array containing list of author names
+     * @param array $names Array containing names of authors
      *
      * @author Okiemute Omuta <iamkheme@gmail.com>
      *
-     * @return bool
+     * @return array
      */
-    private function saveBookAuthors(int $book_id, array $authors) : bool
+    protected function saveAuthors(array $names) : array
     {
-        $book_authors = [];
-        BookAuthor::whereBookId($book_id)->delete();
-        foreach ($authors as $name) {
-            $author = Author::updateOrCreate([ 'name' => $name ]);
-            $book_authors[] = [
-                'book_id'   => $book_id,
-                'author_id' => $author->id,
-                'created_at' => Carbon::now(),
-                'updated_at' => Carbon::now(),
-            ];
+        $now_time = Carbon::now();
+        
+        foreach ($names as $name) {
+            $authors[] = Author::updateOrCreate([
+                'name' => $name,
+            ],
+            [
+                'created_at' => $now_time,
+                'updated_at' => $now_time,
+            ])->id;
         }
 
-        return BookAuthor::insert($book_authors);
+        return $authors;
+    }
+
+    /**
+     * Prepare book info in the requested format
+     *
+     * @param array $book_info   Array with book info
+     * @param array $author_info Array of author namez
+     *
+     * @author Okiemute Omuta <iamkheme@gmail.com>
+     *
+     * @return array
+     */
+    protected function formatBookResponse(array $book_info, array $author_info) : array
+    {
+        return [
+            'name'            => $book_info['name'],
+            'isbn'            => $book_info['isbn'],
+            'authors'         => $author_info,
+            'number_of_pages' => $book_info['number_of_pages'],
+            'publisher'       => $book_info['publisher'],
+            'country'         => $book_info['country'],
+            'release_date'    => $book_info['release_date'],
+        ];
     }
 }
