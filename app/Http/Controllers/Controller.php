@@ -21,16 +21,18 @@ class Controller extends BaseController
     /**
      * Sends a success json response to the user
      *
-     * @param array $data (Optional) Array of data to include in the response. Defaults to [].
+     * @param array  $data        (Optional) Array of data to include in the response. Defaults to [].
+     * @param string $message     (Optional) Message to include in response. Defaults to null.
+     * @param int    $status_code (Optional) HTTP status code for the response. Defaults to 200.
      *
      * @author Okiemute Omuta <iamkheme@gmail.com>
      *
      * @return json
      */
-    protected function successRespons(array $data = [], string $message = null) : \Illuminate\Http\JsonResponse
+    protected function successRespons(array $data = [], string $message = null, int $status_code = 200) : \Illuminate\Http\JsonResponse
     {
         $response = [
-            'status_code' => 200,
+            'status_code' => $status_code,
             'status'      => 'success',
         ];
 
@@ -40,14 +42,14 @@ class Controller extends BaseController
 
         $response['data'] = $data;
         
-        return response()->json($response, 200);
+        return response()->json($response, $status_code == 204 ? 200 : $status_code);
     }
 
     /**
      * Sends a success json response to the user
      *
      * @param array $message     (Optional) Message to include in the response. Defaults to null.
-     * @param array $status_code (Optional) Status code for the response. Defaults to 400.
+     * @param array $status_code (Optional) HTTP status code for the response. Defaults to 400.
      *
      * @author Okiemute Omuta <iamkheme@gmail.com>
      *
