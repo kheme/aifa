@@ -11,6 +11,7 @@
  * @license   All rights reserved.
  * @link      https://twitter.com/kheme
  */
+
 use App\Models\Book;
 use Faker\Generator as Faker;
 
@@ -20,7 +21,6 @@ $factory->define(
         return [
             'name'            => $faker->sentence(mt_rand(3, 6)),
             'isbn'            => $faker->ean13(),
-            'authors'         => [ $faker->firstname . ' ' . $faker->lastname ],
             'number_of_pages' => mt_rand(10, 1000),
             'publisher'       => $faker->company,
             'country'         => $faker->country,
