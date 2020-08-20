@@ -23,4 +23,4 @@ A simple RESTful API service inspired by the [Ice &amp; Fire API](https://anapio
 * Finally, from the terminal window start the development server with the command `php -S localhost:8000 -t ./public`
 
 ## Testing
-To test, open a new terminal window from within the aifa folder and run `./vendor/bin/pupunit --testdox`
+To test, open a new terminal window from within the aifa folder and run `./vendor/bin/phpunit --testdox`
