@@ -8,7 +8,7 @@
  * @package   App\Http\Controllers
  * @author    Okiemute Omuta <omuta.okiemute@gmail.com>
  * @copyright 2020 Okiemute Omuta. All rights reserved.
- * @license   All rights retained
+ * @license   All rights reserved.
  * @link      https://twitter.com/kheme
  */
 namespace App\Http\Controllers;
@@ -24,7 +24,7 @@ use Illuminate\Support\Str;
  * @package   App\Http\Controllers
  * @author    Okiemute Omuta <omuta.okiemute@gmail.com>
  * @copyright 2020 Okiemute Omuta. All rights reserved.
- * @license   All rights retained
+ * @license   All rights reserved.
  * @link      https://twitter.com/kheme
  */
 class ExternalBookController extends Controller
