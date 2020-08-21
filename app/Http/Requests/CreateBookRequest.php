@@ -7,7 +7,7 @@
  * @category  Validator
  * @package   App\Http\Controllers
  * @author    Okiemute Omuta <iamkheme@gmail.com>
- * @copyright 2019 Datespace. All rights reserved.
+ * @copyright 2020 Okiemute Omuta. All rights reserved.
  * @license   All rights reserved.
  * @link      https://github.com/kheme
  */
@@ -23,7 +23,7 @@ use Illuminate\Validation\Validator as ValidationValidator;
  * @category  Validator
  * @package   App\Http\Controllers
  * @author    Okiemute Omuta <iamkheme@gmail.com>
- * @copyright 2019 Datespace. All rights reserved.
+ * @copyright 2020 Okiemute Omuta. All rights reserved.
  * @license   All rights reserved.
  * @link      https://github.com/kheme
  */
