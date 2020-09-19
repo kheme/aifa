@@ -78,7 +78,22 @@ class Book extends Model
         }
         
         BookAuthor::whereBookId($this->id)->delete();
+        BookAuthor::insert($book_authors);
 
-        return BookAuthor::insert($book_authors);
+        return $this;
+    }
+
+    /**
+     * Remove authors from a book
+     *
+     * @author Okiemute Omuta <iamkheme@gmail.com>
+     *
+     * @return void
+     */
+    public function removeAuthors()
+    {
+        BookAuthor::whereBookId($this->id)->delete();
+
+        return $this;
     }
 }
