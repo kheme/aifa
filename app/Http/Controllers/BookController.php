@@ -152,7 +152,7 @@ class BookController extends Controller
      */
     public function destroy(int $id) : JsonResponse
     {
-        $book = Book:: findOrFail($id)->first();
+        $book = Book::whereId($id)->firstOrFail();
         $book->delete();
 
         return $this->successRespons(

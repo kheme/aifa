@@ -128,6 +128,7 @@ class BooksTest extends TestCase
 
         $this->seeInDatabase('books', $new_book->toArray());
         $patch_response = $this->json('DELETE', 'api/v1/books/' . $new_book->id);
+
         $patch_response->assertResponseStatus(200);
         $this->missingFromDatabase('books', $new_book->toArray());
     }
