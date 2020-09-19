@@ -70,10 +70,14 @@ class BooksTest extends TestCase
      * @return void
      */
     public function testCanUpdateBook()
-    {
-        $book_and_author = factory(App\Models\BookAuthor::class)->create();
+    {   
+        $patch_response = $this->json(
+            'PATCH',
+            'api/v1/books/' . factory(App\Models\Book::class)->create()->id,
+            collect($this->fake_books[4]->toArray() + [ 'authors' => factory(\App\Models\Author::class)->create()->pluck('name') ])
+            ->toArray()
+        );
 
-        $patch_response = $this->json('PATCH', 'api/v1/books/' . $book_and_author->book_id, $this->fake_books[4]->toArray());
         $patch_response->assertResponseStatus(200);
         $this->seeInDatabase('books', collect($this->fake_books[4]->toArray())->except('authors')->toArray());
     }
