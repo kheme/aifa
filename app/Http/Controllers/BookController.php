@@ -129,6 +129,7 @@ class BookController extends Controller
         DB::beginTransaction();
 
         Book::whereId($id)
+            ->firstOrFail()
             ->removeAuthors()
             ->addAuthors($this->saveAuthors($this->create_book_request->getAuthors()))
             ->update($this->create_book_request->getBookInfo());
@@ -151,7 +152,7 @@ class BookController extends Controller
      */
     public function destroy(int $id) : JsonResponse
     {
-        $book = Book:: findOrFail($id)->first();
+        $book = Book::whereId($id)->firstOrFail();
         $book->delete();
 
         return $this->successRespons(
