@@ -129,6 +129,7 @@ class BookController extends Controller
         DB::beginTransaction();
 
         Book::whereId($id)
+            ->firstOrFail()
             ->removeAuthors()
             ->addAuthors($this->saveAuthors($this->create_book_request->getAuthors()))
             ->update($this->create_book_request->getBookInfo());
