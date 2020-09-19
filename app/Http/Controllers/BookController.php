@@ -18,9 +18,9 @@ use Illuminate\Http\Request;
 use Illuminate\Http\JsonResponse;
 use Illuminate\Support\Facades\DB;
 use App\Http\Requests\CreateBookRequest;
+use App\Http\Resources\BookResource;
 use App\Models\Author;
 use App\Models\Book;
-use App\Models\BookAuthor;
 use Carbon\Carbon;
 
 /**
@@ -56,18 +56,9 @@ class BookController extends Controller
      */
     public function index() : JsonResponse
     {
-        $books = Book::selectRaw(
-            'id, name, isbn, null AS authors, number_of_pages,
-            publisher, country, release_date'
-        )
-        ->with('getAuthors:name')
-        ->get();
-
-        foreach ($books as $book) {
-            $book->authors = $book->getAuthors()->pluck('name')->toArray();
-        }
-
-        return $this->successRespons($books->makeHidden('getAuthors')->toArray());
+        return $this->successRespons(
+            BookResource::collection(Book::with('getAuthors:name')->get())
+        );
     }
 
     
@@ -80,24 +71,14 @@ class BookController extends Controller
      *
      * @return \Illuminate\Http\JsonResponse
      */
-    public function show(int $id) : JsonResponse
+    public function show(int $id)
     {
-        $book_info = Book::findOrFail($id)->with('getAuthors:name')->first();
+        $book = Book::whereId($id)->with('getAuthors:name')->first();
 
         return $this->successRespons(
-            array_merge(
-                [ 'id' => $id ], 
-                $this->formatBookResponse(
-                    $book_info->toArray(),
-                    collect($book_info->getAuthors)->map(function ($item, $key) {
-                        return collect($item)->only('name');
-                    })->flatten()
-                    ->toArray()
-                )
-            )
+            $book ? new BookResource($book) : []
         );
     }
-
 
     /**
      * Create book in the local database
@@ -116,29 +97,25 @@ class BookController extends Controller
             return $this->errorRespons($validator->errors()->all()[0], 400);
         }
 
-        $book_info   = $this->create_book_request->getBookInfo();
-        $author_info = $this->create_book_request->getAuthors();
+        $book_info = $this->create_book_request->getBookInfo();
 
         DB::beginTransaction();
 
-        $book    = Book::firstOrCreate([ 'name' => $book_info['name']], $book_info);
-        $authors = $this->saveAuthors($author_info);
+        $book = Book::firstOrCreate([ 'name' => $book_info['name']], $book_info);
 
         if (! $book) {
             DB::rollBack();
             throw new Exception('Could not create book');
         }
 
-        if (! $book->addAuthors($authors)) {
+        if (! $book->removeAuthors()->addAuthors($this->saveAuthors($this->create_book_request->getAuthors()))) {
             DB::rollBack();
             throw new Exception('Could not add author(s) to book');
         }
 
         DB::commit();
-
-        return $this->successRespons([
-            'book' => $this->formatBookResponse($book_info, $author_info)
-        ], null, 201);
+        
+        return $this->successRespons(new BookResource($book), null, 201);
     }
 
     public function update(Request $request, int $id) : JsonResponse
@@ -148,16 +125,17 @@ class BookController extends Controller
         if ($validator->fails()) {
             return $this->errorRespons($validator->errors()->all()[0], 400);
         }
+        
+        DB::beginTransaction();
 
-        $book_info = $this->create_book_request->getBookInfo();
+        Book::whereId($id)
+            ->removeAuthors()
+            ->addAuthors($this->saveAuthors($this->create_book_request->getAuthors()))
+            ->update($this->create_book_request->getBookInfo());
 
-        Book::findOrFail($id)->update($book_info);
+        DB::commit();
 
-        return $this->successRespons(
-            $this->formatBookResponse(
-                $book_info,
-                $this->create_book_request->getAuthors()
-            ),
+        return $this->successRespons(new BookResource(Book::whereId($id)->first()),
             'The book ' . $request->name . ' was updated successfully'
         );
     }
@@ -207,28 +185,5 @@ class BookController extends Controller
         }
 
         return $authors;
-    }
-
-    /**
-     * Prepare book info in the requested format
-     *
-     * @param array $book_info   Array with book info
-     * @param array $author_info Array of author namez
-     *
-     * @author Okiemute Omuta <iamkheme@gmail.com>
-     *
-     * @return array
-     */
-    protected function formatBookResponse(array $book_info, array $author_info) : array
-    {
-        return [
-            'name'            => $book_info['name'],
-            'isbn'            => $book_info['isbn'],
-            'authors'         => $author_info,
-            'number_of_pages' => $book_info['number_of_pages'],
-            'publisher'       => $book_info['publisher'],
-            'country'         => $book_info['country'],
-            'release_date'    => $book_info['release_date'],
-        ];
     }
 }
